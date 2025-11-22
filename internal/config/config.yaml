@@ -1,0 +1,23 @@
+pgSql:
+    host: localhost
+    port: 5432
+    user: postgres
+    password: 998627
+    databaseName: blog-data
+
+secretKey: 123456
+
+middlewaresKeys:
+    response:
+        response: 'response'
+        statusCode: 'statusCode'
+        message: 'message'
+    validate:
+        validated: 'validated'
+    auth:
+        tokenKey: 'Authorization'
+
+minio:
+    port: 9000
+    user: root
+    password: '12345678'
