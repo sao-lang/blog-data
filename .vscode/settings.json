@@ -2,11 +2,13 @@
     "cSpell.words": [
         "apipost",
         "Chiang",
+        "conds",
         "gonic",
         "gorm",
         "lfshook",
         "logrus",
         "minio",
+        "objs",
         "rotatelogs",
         "sslmode",
         "webp"

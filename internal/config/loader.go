@@ -6,17 +6,43 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/viper"
+	"gorm.io/gorm/logger"
 )
 
 type Config struct {
-	PgSql struct {
-		Host         string
-		Port         int
-		User         string
-		Password     string
-		DatabaseName string
+	SecretKey string
+	ConfigKey string
+
+	// 数据库
+	PgSQL struct {
+		Host     string
+		Port     int
+		User     string
+		Password string
+		DBName   string
+		SSLMode  string
+		MaxIdle  int
+		MaxOpen  int
+		LogLevel logger.LogLevel // 或 logger.LogLevel
 	}
-	SecretKey       string
+
+	// Redis
+	Redis struct {
+		Addr     string
+		Password string
+		DB       int
+	}
+
+	// MinIO
+	Minio struct {
+		Endpoint        string
+		AccessKeyID     string
+		SecretAccessKey string
+		UseSSL          bool
+		Bucket          string
+	}
+
+	// 中间件 Key 配置
 	MiddlewaresKeys struct {
 		Response struct {
 			Response   string
@@ -29,9 +55,6 @@ type Config struct {
 		Auth struct {
 			TokenKey string
 		}
-	}
-	ConfigKey string
-	Minio     struct {
 	}
 }
 

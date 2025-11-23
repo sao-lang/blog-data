@@ -3,7 +3,7 @@ package pgsql
 import "gorm.io/gorm"
 
 // 事务执行器
-func (p *PGSQL) Transaction(fc func(tx *gorm.DB) error) error {
+func (p *PGSQL[T]) Transaction(fc func(tx *gorm.DB) error) error {
 	return p.DB.Transaction(fc)
 }
 

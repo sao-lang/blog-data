@@ -21,11 +21,11 @@ type Config struct {
 	LogLevel logger.LogLevel
 }
 
-type PGSQL struct {
+type PGSQL[T any] struct {
 	DB *gorm.DB
 }
 
-func NewPGSQL(cfg Config) (*PGSQL, error) {
+func NewPGSQL[T any](cfg Config) (*PGSQL[T], error) {
 	dsn := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.DBName, cfg.SSLMode,
@@ -46,10 +46,10 @@ func NewPGSQL(cfg Config) (*PGSQL, error) {
 	sqlDB.SetMaxOpenConns(cfg.MaxOpen)
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
-	return &PGSQL{DB: db}, nil
+	return &PGSQL[T]{DB: db}, nil
 }
 
-func (p *PGSQL) Close() error {
+func (p *PGSQL[T]) Close() error {
 	sqlDB, err := p.DB.DB()
 	if err != nil {
 		return err

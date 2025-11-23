@@ -4,10 +4,10 @@ package redis
 import (
 	"context"
 
-	re "github.com/redis/go-redis/v11"
+	re "github.com/redis/go-redis/v9"
 )
 
-func (r *RedisClient) Tx(ctx context.Context, fn func(pipe re.Pipeliner) error) error {
+func (r *Client) Tx(ctx context.Context, fn func(pipe re.Pipeliner) error) error {
 	_, err := r.client.TxPipelined(ctx, fn)
 	return err
 }
