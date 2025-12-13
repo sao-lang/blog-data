@@ -1,8 +1,11 @@
 {
     "cSpell.words": [
+        "Acks",
         "apipost",
         "Chiang",
         "conds",
+        "dbname",
+        "dgrijalva",
         "gonic",
         "gorm",
         "lfshook",
@@ -10,6 +13,7 @@
         "minio",
         "objs",
         "rotatelogs",
+        "sarama",
         "sslmode",
         "webp"
     ]

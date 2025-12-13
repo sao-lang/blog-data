@@ -17,8 +17,16 @@ func SetCtxValidatedData(c *gin.Context, dto interface{}) {
 }
 
 func GetCtxResponseStatusCode(c *gin.Context) (int, bool) {
-	code, exists := c.Get(constants.RESPONSE_CODE_KEY)
-	return code.(int), exists
+	v, exists := c.Get(constants.RESPONSE_CODE_KEY)
+	if !exists {
+		return 0, false
+	}
+	code, ok := v.(int)
+	if !ok {
+		return 0, false
+	}
+
+	return code, true
 }
 
 func GetCtxResponseMessage(c *gin.Context) (string, bool) {

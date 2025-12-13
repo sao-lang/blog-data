@@ -2,7 +2,7 @@ secretKey: 123456
 
 pgSQL:
     host: localhost
-    port: 5432
+    port: 15432
     user: postgres
     password: 998627
     dbName: blog-data

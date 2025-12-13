@@ -3,19 +3,19 @@ package pgsql
 // ---------------- 链式查询方法 ----------------
 
 // 条件查询 map
-func (p *PGSQL[T]) WhereMap(conds map[string]interface{}) *PGSQL[T] {
+func (p *PGSQL) WhereMap(conds map[string]interface{}) *PGSQL {
 	p.DB = p.DB.Where(conds)
 	return p
 }
 
 // 条件查询结构体
-func (p *PGSQL[T]) WhereStruct(cond T) *PGSQL[T] {
+func (p *PGSQL) WhereStruct(cond interface{}) *PGSQL {
 	p.DB = p.DB.Where(&cond)
 	return p
 }
 
 // 范围查询
-func (p *PGSQL[T]) WhereRange(field string, min, max interface{}) *PGSQL[T] {
+func (p *PGSQL) WhereRange(field string, min, max interface{}) *PGSQL {
 	if min != nil && max != nil {
 		p.DB = p.DB.Where(field+" BETWEEN ? AND ?", min, max)
 	} else if min != nil {
@@ -27,19 +27,19 @@ func (p *PGSQL[T]) WhereRange(field string, min, max interface{}) *PGSQL[T] {
 }
 
 // 模糊查询
-func (p *PGSQL[T]) Like(field string, value string) *PGSQL[T] {
+func (p *PGSQL) Like(field string, value string) *PGSQL {
 	p.DB = p.DB.Where(field+" ILIKE ?", "%"+value+"%")
 	return p
 }
 
 // 批量 IN 查询
-func (p *PGSQL[T]) FindIn(field string, values []interface{}) *PGSQL[T] {
+func (p *PGSQL) FindIn(field string, values []interface{}) *PGSQL {
 	p.DB = p.DB.Where(field+" IN ?", values)
 	return p
 }
 
 // 排序
-func (p *PGSQL[T]) Order(field string, desc bool) *PGSQL[T] {
+func (p *PGSQL) Order(field string, desc bool) *PGSQL {
 	order := field
 	if desc {
 		order += " DESC"
@@ -51,7 +51,7 @@ func (p *PGSQL[T]) Order(field string, desc bool) *PGSQL[T] {
 }
 
 // 分页
-func (p *PGSQL[T]) Paginate(page, pageSize int) *PGSQL[T] {
+func (p *PGSQL) Paginate(page, pageSize int) *PGSQL {
 	if page <= 0 {
 		page = 1
 	}
@@ -66,12 +66,12 @@ func (p *PGSQL[T]) Paginate(page, pageSize int) *PGSQL[T] {
 // ---------------- 查询方法 ----------------
 
 // 分页 + 条件查询
-func (p *PGSQL[T]) FindWithPage(page, pageSize int) (*PageResult[T], error) {
-	var list []T
+func (p *PGSQL) FindWithPage(page, pageSize int) (*PageResult[interface{}], error) {
+	var list []interface{}
 	var total int64
 
 	// 统计总数
-	if err := p.DB.Model(new(T)).Count(&total).Error; err != nil {
+	if err := p.DB.Model(new(interface{})).Count(&total).Error; err != nil {
 		return nil, err
 	}
 
@@ -82,7 +82,7 @@ func (p *PGSQL[T]) FindWithPage(page, pageSize int) (*PageResult[T], error) {
 	}
 
 	pageCount := int((total + int64(pageSize) - 1) / int64(pageSize))
-	return &PageResult[T]{
+	return &PageResult[interface{}]{
 		List:      list,
 		Total:     total,
 		Page:      page,
@@ -92,8 +92,8 @@ func (p *PGSQL[T]) FindWithPage(page, pageSize int) (*PageResult[T], error) {
 }
 
 // 查询全部
-func (p *PGSQL[T]) FindAll() ([]T, error) {
-	var list []T
+func (p *PGSQL) FindAll() ([]interface{}, error) {
+	var list []interface{}
 	if err := p.DB.Find(&list).Error; err != nil {
 		return nil, err
 	}

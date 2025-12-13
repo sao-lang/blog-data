@@ -18,20 +18,35 @@ type Config struct {
 	SSLMode  string
 	MaxIdle  int
 	MaxOpen  int
-	LogLevel logger.LogLevel
+	LogLevel string
 }
 
-type PGSQL[T any] struct {
+type PGSQL struct {
 	DB *gorm.DB
 }
 
-func NewPGSQL[T any](cfg Config) (*PGSQL[T], error) {
+func parseLogLevel(level string) logger.LogLevel {
+	switch level {
+	case "silent":
+		return logger.Silent
+	case "error":
+		return logger.Error
+	case "warn":
+		return logger.Warn
+	case "info":
+		fallthrough
+	default:
+		return logger.Info
+	}
+}
+
+func NewPGSQL(cfg Config) (*PGSQL, error) {
 	dsn := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.DBName, cfg.SSLMode,
 	)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(cfg.LogLevel),
+		Logger: logger.Default.LogMode(parseLogLevel(cfg.LogLevel)),
 	})
 	if err != nil {
 		return nil, err
@@ -46,10 +61,10 @@ func NewPGSQL[T any](cfg Config) (*PGSQL[T], error) {
 	sqlDB.SetMaxOpenConns(cfg.MaxOpen)
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
-	return &PGSQL[T]{DB: db}, nil
+	return &PGSQL{DB: db}, nil
 }
 
-func (p *PGSQL[T]) Close() error {
+func (p *PGSQL) Close() error {
 	sqlDB, err := p.DB.DB()
 	if err != nil {
 		return err

@@ -8,7 +8,7 @@ import (
 
 func main() {
 	aPort := port.FindAvailablePort(8089)
-	router, err := app.Setup[any]()
+	router, err := app.Setup()
 	if err != nil {
 		panic(fmt.Sprintf("service setup failed:", err.Error()))
 	}

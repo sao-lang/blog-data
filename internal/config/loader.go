@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/viper"
-	"gorm.io/gorm/logger"
 )
 
 type Config struct {
@@ -23,7 +22,7 @@ type Config struct {
 		SSLMode  string
 		MaxIdle  int
 		MaxOpen  int
-		LogLevel logger.LogLevel // 或 logger.LogLevel
+		LogLevel string // 或 logger.LogLevel
 	}
 
 	// Redis
