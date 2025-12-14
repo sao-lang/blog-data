@@ -17,17 +17,17 @@ import (
 )
 
 type UserService struct {
-	UserRepository *UserRepository
+	Repo *UserRepository
 }
 
 func NewUserService(userRepository *UserRepository) *UserService {
 	return &UserService{
-		UserRepository: userRepository,
+		Repo: userRepository,
 	}
 }
 
 func (s *UserService) Register(userInfo *CreateUserDTO) (*User, error) {
-	findUser, err := s.UserRepository.FindByUserName(userInfo.UserName)
+	findUser, err := s.Repo.FindByUserName(userInfo.UserName)
 	if findUser != nil {
 		return nil, errors.New("this username has already been registered")
 	}
@@ -56,11 +56,11 @@ func (s *UserService) Register(userInfo *CreateUserDTO) (*User, error) {
 		CreatedAt: time.Now(),
 	}
 
-	return user, s.UserRepository.Create(user)
+	return user, s.Repo.Create(user)
 }
 
 func (s *UserService) Authenticate(userName string, password string) (*User, string, string, error) {
-	user, err := s.UserRepository.FindByUserName(userName)
+	user, err := s.Repo.FindByUserName(userName)
 	if user == nil {
 		return nil, "", "", errors.New("the current username is not registered")
 	}
@@ -99,7 +99,7 @@ func (s *UserService) RefreshToken(refreshToken string) (string, error) {
 	}
 	claims := token.Claims.(*jwt.StandardClaims)
 	userName := claims.Subject
-	user, err := s.UserRepository.FindByUserName(userName)
+	user, err := s.Repo.FindByUserName(userName)
 	if err != nil {
 		return "", err
 	}

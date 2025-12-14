@@ -1,0 +1,14 @@
+{
+  "name": "blog-golang",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "view-logs:win": ".\\view-log.ps1 .\\logs\\app-2025-12-14.log",
+    "view-logs": "./view-log.sh",
+    "dev": "go run main.go"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

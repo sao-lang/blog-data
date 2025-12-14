@@ -1,10 +1,10 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
+	"blog/internal/infra/gnest"
 )
 
-func SetupRouter(router *gin.Engine, db *gorm.DB) {
-	setupAuthRouter(router, db)
+func Setup(app *gnest.GnestApp) {
+
+	setupAuthRouter(app)
 }

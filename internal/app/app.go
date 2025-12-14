@@ -2,11 +2,14 @@ package app
 
 import (
 	"blog/internal/config"
+	"blog/internal/infra/gnest"
+	"blog/internal/infra/logger"
 	"blog/internal/infra/minio"
 	"blog/internal/infra/pgsql"
 	"blog/internal/infra/redis"
+	"blog/internal/interfaces/interceptors"
 	"blog/internal/interfaces/middlewares"
-	router "blog/internal/router"
+	"blog/internal/router"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -33,32 +36,39 @@ func loadPgsqlConfig(cfg *config.Config) pgsql.Config {
 	}
 }
 
-func Setup() (*gin.Engine, error) {
+func Setup() (*gnest.GnestApp, error) {
+	app := gnest.New()
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		return nil, err
 	}
-	pgsql, err := pgsql.NewPGSQL(loadPgsqlConfig(cfg))
+	// 1. 提供底层依赖 (注入到容器)
+	pg, err := pgsql.NewPGSQL(loadPgsqlConfig(cfg))
 	if err != nil {
 		return nil, err
 	}
-	engin := gin.Default()
-	registerMiddlewares(engin)
-	router.SetupRouter(engin, pgsql.DB)
-	app := App{
-		Pgsql:  pgsql,
-		Router: engin,
-	}
-	return app.Router, nil
+	app.Provide(pg.DB) // 提供 *gorm.DB
+	router.Setup(app)
+	registerMiddlewares(app)
+	app.GET("/string", func(ctx *gin.Context) string {
+		return "This is a direct string response from Gnest!"
+	})
+
+	return app, nil
 }
 
-func registerMiddlewares(engin *gin.Engine) {
+func registerMiddlewares(app *gnest.GnestApp) {
 	env := os.Getenv("APP_ENV")
 	if env == "" {
 		env = "dev"
 	}
-	engin.Use(middlewares.Response())
-	engin.Use(middlewares.Logger(env))
-	engin.Use(middlewares.CORS())
-	engin.Use(middlewares.Recovery())
+
+	app.Provide(logger.NewLoggerService(env))
+	logInterceptor := &interceptors.LoggingInterceptor{}
+	app.Provide(logInterceptor)
+	app.UseGlobalInterceptors(logInterceptor)
+	// app.Use(middlewares.Response())
+	// app.Use(middlewares.Logger(env))
+	app.Use(middlewares.CORS())
+	app.Use(middlewares.Recovery())
 }

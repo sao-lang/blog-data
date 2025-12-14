@@ -1,0 +1,17 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  # 随便写一个简单的命令，保证 air 的 build 流程能过
+  cmd = "go version" 
+  # 重点：直接用 go run 启动，不依赖 tmp 目录下的二进制
+  full_bin = "go run main.go"
+  # 监听后缀
+  include_ext = ["go", "tpl", "tmpl", "html", "yaml", "toml"]
+  exclude_dir = ["assets", "tmp", "vendor", "test"]
+  delay = 1000
+  # Windows 下建议设为 false，避免信号冲突导致进程杀不死
+  send_interrupt = false
+
+[log]
+  time = true

@@ -12,8 +12,8 @@ func main() {
 	if err != nil {
 		panic(fmt.Sprintf("service setup failed:", err.Error()))
 	}
-	err = router.Run(fmt.Sprintf("0.0.0.0:%d", aPort))
-	if err != nil {
-		panic(fmt.Sprintf("service listen %d failed: %d", aPort, err.Error()))
-	}
+	router.ListenAndServe(fmt.Sprintf("0.0.0.0:%d", aPort))
+	// if err != nil {
+	// 	panic(fmt.Sprintf("service listen %d failed: %d", aPort, err.Error()))
+	// }
 }
