@@ -311,20 +311,33 @@ const (
 )
 
 type MetadataStore struct {
-	data          sync.Map
+	data          sync.Map // key: uintptr (函数指针) -> *sync.Map[metaKey]any
 	compiledCache sync.Map
 }
 
 var metadata = &MetadataStore{}
 
-func (m *MetadataStore) Set(target any, key metaKey, value any) {
-	m.data.Store(reflect.ValueOf(target).Pointer(), map[metaKey]any{
-		key: value,
-	})
+// 获取函数的 metaMap，如果不存在则初始化
+func (m *MetadataStore) getMetaMap(ptr uintptr) *sync.Map {
+	v, _ := m.data.LoadOrStore(ptr, &sync.Map{})
+	return v.(*sync.Map)
 }
+
+// 安全设置元数据
+func (m *MetadataStore) Set(target any, key metaKey, value any) {
+	ptr := reflect.ValueOf(target).Pointer()
+	metaMap := m.getMetaMap(ptr)
+	metaMap.Store(key, value)
+}
+
+// 安全获取元数据
 func (m *MetadataStore) Get(target any, key metaKey) any {
-	if v, ok := m.data.Load(reflect.ValueOf(target).Pointer()); ok {
-		return v.(map[metaKey]any)[key]
+	ptr := reflect.ValueOf(target).Pointer()
+	if v, ok := m.data.Load(ptr); ok {
+		metaMap := v.(*sync.Map)
+		if val, ok := metaMap.Load(key); ok {
+			return val
+		}
 	}
 	return nil
 }
@@ -372,28 +385,19 @@ type ParamMeta struct {
 	Name   string
 	Pipes  []Pipe
 }
-
 func bindParam(fn any, meta ParamMeta) {
 	ptr := reflect.ValueOf(fn).Pointer()
-	var list []ParamMeta
-	if v, ok := metadata.data.Load(ptr); ok {
-		// 注意：这里的原始逻辑存在潜在的并发问题和类型断言问题。
-		// 在完整源码中，这里应该更安全地处理 metadata 数据的加载、修改和存储，
-		// 但为了保持原有逻辑不被“随意改动”，我们保持现有实现风格。
-		// 实际上，正确的实现应该是：
-		// metaMap, _ := metadata.data.LoadOrStore(ptr, make(map[metaKey]any))
-		// list = metaMap.(map[metaKey]any)[paramMeta].([]ParamMeta) //...
+	metaMap := metadata.getMetaMap(ptr)
 
-		// 保持原样以满足要求：
-		list = v.(map[metaKey]any)[paramMeta].([]ParamMeta)
-	} else {
-		list = []ParamMeta{}
-	}
+	// 获取或初始化 paramMeta 列表
+	listRaw, _ := metaMap.LoadOrStore(paramMeta, &[]ParamMeta{})
+	list := listRaw.(*[]ParamMeta)
 
-	list = append(list, meta)
-
-	// 由于 metadata.Get/Set 的实现风格，这里需要重新设置整个 map
-	metadata.data.Store(ptr, map[metaKey]any{paramMeta: list})
+	// 对 slice 追加需要加锁
+	var mu sync.Mutex
+	mu.Lock()
+	*list = append(*list, meta)
+	mu.Unlock()
 }
 
 func Param(name string, pipes ...Pipe) func(any, int) {
@@ -1053,3 +1057,4 @@ func (a *Application) Mount(ctx *ExecutionContext, method string, path string) (
 	// 由于 Mount 是驱动层接口，它必须同步等待结果才能返回给调用者。
 	return resultFuture.Await()
 }
+
