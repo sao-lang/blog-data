@@ -17,5 +17,6 @@
         "sarama",
         "sslmode",
         "webp"
-    ]
+    ],
+    "go.diagnostic.vulncheck": "Imports"
 }
